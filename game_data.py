@@ -9,6 +9,7 @@ class game_user:
         self.pet_id = args[5]
         self.crit_chance = args[6]
         self.crit_dmg = args[7]
+        self.dmg_spread = args[8]
 
 
 class pet:
