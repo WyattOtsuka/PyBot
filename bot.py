@@ -2,6 +2,7 @@ import discord
 import json
 import sqlite3
 import db_helper as db
+from random import Random
 
 # Setting up Login
 f = open("./secrets/config.json")
@@ -27,12 +28,15 @@ async def on_message(message):
         return
 
     if message.content.startswith(prefix):
-        if not db.has_user(message.author.id):
-            db.new_user(message.author.id)
+        id = message.author.id
+        if not db.has_user(id):
+            db.new_user(id)
+            print(db.get_user(id).hp)
             # TODO - Starting prompt
         else:
+            
             if message.content == f'{prefix}adv' or message.content == f'{prefix}adventure':
-                adventure(message.author.id)
+                adventure(id)
 
             await message.channel.send('Hello!')
 
@@ -45,7 +49,13 @@ def adventure(id):
     '''
     Rolls dmg dealt and dmg taken. Handles winning and losing
     '''
-    pass
+    if db.in_fight(id):
+        print("in fight")
+        player_roll = Random(0,6,1)
+        enemy_roll = Random(0,6,1)
+    else:
+        print("not in fight")
+        roll_new_fight(id)
 
 @staticmethod
 def heal(item, count):
@@ -68,8 +78,9 @@ def perks(number, tier):
     '''
     pass
 
+# TODO - update from dummy fight
 @staticmethod
-def roll_new_fight():
+def roll_new_fight(id):
     '''
     Create a new monster with stats based on the players level
     '''

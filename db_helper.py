@@ -7,13 +7,29 @@ cursor = connection.cursor()
 def create_tables():
     try:
         cursor.execute("CREATE TABLE users (player_id TEXT, xp INTEGER, hp INTEGER, atk INTEGER, def INTEGER, pet_id TEXT, crit_chance INTEGER, crit_dmg INTEGER, dmg_spread INT)")
-        cursor.execute("CREATE TABLE pets (pet_id TEXT, level INTEGER, xp INTEGER, hp INTEGER, atk INTEGER, def INTEGER")
-        cursor.execute("CREATE TABLE battles (enemy_hp INT, enemy_xp INT, enemy_attack INT, enemy_def INT, enemy_dmg_spread INT")
+    except Exception as e:
+        print(e)
+    try:
+        cursor.execute("CREATE TABLE pets (pet_id TEXT, level INTEGER, xp INTEGER, hp INTEGER, atk INTEGER, def INTEGER)")
+    except Exception as e:
+        print(e)
+    try:
+        cursor.execute("CREATE TABLE battles (player_id INT, enemy_name TEXT, enemy_hp INT, enemy_xp INT, enemy_attack INT, enemy_def INT, enemy_dmg_spread INT)")
+    except Exception as e:
+        print(e)
+    try:
         cursor.execute("CREATE TABLE eqpt (weapon_id INT, armor_id INT, ring_id INT, helmet_id INT, boots_id INT)")
     except Exception as e:
         print(e)
 
 
+@staticmethod
+def drop(table):
+    cursor.execute(f"DROP TABLE {table}")
+
+'''
+PLAYER METHODS
+'''
 # id, xp, hp, atk, def, pet_id, crit_chance, crit_dmg
 # Note: Player level is calculated based on total xp
 @staticmethod
@@ -32,7 +48,7 @@ def get_user(id) -> game_user:
     Returns a game_user object with the given ID
     '''
     stats = cursor.execute(f"SELECT * FROM users WHERE player_id = {id}").fetchall()
-    gm = game_user(stats)
+    gm = game_user(stats[0])
     return gm
 
 @staticmethod
@@ -42,17 +58,47 @@ def update_hp(id, delta) -> int:
     new HP = old HP + delta
     Returns the new HP
     '''
-    pass
-
+    player_hp = cursor.execute(f"SELECT hp FROM users WHERE player_id = {id}")
+    player_hp += delta
+    cursor.execute(f"UPDATE users SET hp = {player_hp}")
+    
 @staticmethod
-def update_xp() -> int:
+def update_xp(id) -> int:
     '''
     Changes xp to a new amount
     '''
 
+'''
+COMBAT METHODS
+'''
+
 @staticmethod
-def drop(table):
-    cursor.execute(f"DROP TABLE {table}")
+def in_fight(id):
+    '''
+    Returns true if the user is currently in a fight
+    '''
+    return len(cursor.execute(f"SELECT * FROM battles WHERE player_id = {id}").fetchall()) > 0
+
+# TODO - change from dummy fight
+@staticmethod
+def new_fight(id):
+    '''
+    Create a new fight
+    '''
+    
+    pass
+
+@staticmethod
+def dmg_enemy(id, dmg_dealt) -> int:
+    '''
+    Deal damage to the current enemy the user is fighting. 
+    Returns the enemies current HP after damage is dealt
+    '''
+    enemy_hp = cursor.execute(f"SELECT enemy_hp FROM battles WHERE player_id = {id}")
+    enemy_hp -= dmg_dealt
+    cursor.execute(f"UPDATE battles SET enemy_hp = {enemy_hp}")
+    return enemy_hp
+
 
 '''
 TODO
@@ -70,4 +116,6 @@ drop("pets")
 drop("battles")
 drop("eqpt")
 '''
-create_tables
+
+
+create_tables()
