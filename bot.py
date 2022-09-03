@@ -1,3 +1,5 @@
+from getpass import getuser
+import math
 import discord
 import json
 import sqlite3
@@ -31,7 +33,6 @@ async def on_message(message):
         id = message.author.id
         if not db.has_user(id):
             db.new_user(id)
-            print(db.get_user(id).hp)
             # TODO - Starting prompt
         else:
             
@@ -49,12 +50,14 @@ def adventure(id):
     '''
     Rolls dmg dealt and dmg taken. Handles winning and losing
     '''
+    print("adv called")
     if db.in_fight(id):
         print("in fight")
         player_roll = Random(0,6,1)
         enemy_roll = Random(0,6,1)
     else:
         print("not in fight")
+        # Get current level +/- 3 to fight level [0:inf)
         roll_new_fight(id)
 
 @staticmethod
@@ -84,6 +87,7 @@ def roll_new_fight(id):
     '''
     Create a new monster with stats based on the players level
     '''
+    print("Rolling new fight")
     pass
 '''
 PET METHODS
@@ -95,6 +99,24 @@ def xp_share(percent):
 @staticmethod
 def set_name(name):
     pass
+
+
+
+'''
+HELPER METHODS
+'''
+
+@staticmethod
+def xp_to_level(lvl) -> int:
+    '''
+    Returns xp required to get to next level 
+    
+    10 + lvl for base scaling up of the level xp. lvls 1 - 100
+    math.floor(lvl/10) to make each set of 10 scale harder than the rest
+    ** 1.5 for the range of 100 to about 500
+    (1/2000) * (1000 - math.floor(1000/lvl)) helps keep the xp form taking off too far. 500+
+    '''
+    return (10 + lvl ) * math.floor(lvl/10) ** (1.5 - (1/2000) * (1000 - math.floor(1000/lvl)))
 
 
 client.run(configs['token'])
