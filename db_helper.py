@@ -6,19 +6,23 @@ cursor = connection.cursor()
 @staticmethod
 def create_tables():
     try:
-        cursor.execute("CREATE TABLE users (player_id TEXT, xp INTEGER, hp INTEGER, atk INTEGER, def INTEGER, pet_id TEXT, crit_chance INTEGER, crit_dmg INTEGER, dmg_spread INT)")
+        cursor.execute("CREATE TABLE users (player_id TEXT, xp INTEGER, lvl INTEGER, hp INTEGER, atk INTEGER, def INTEGER, pet_id TEXT, crit_chance INTEGER, crit_dmg INTEGER, dmg_spread INT)")
+        print("Created Users")
     except Exception as e:
         print(e)
     try:
         cursor.execute("CREATE TABLE pets (pet_id TEXT, level INTEGER, xp INTEGER, hp INTEGER, atk INTEGER, def INTEGER)")
+        print("Created pets")
     except Exception as e:
         print(e)
     try:
         cursor.execute("CREATE TABLE battles (player_id INT, enemy_name TEXT, enemy_hp INT, enemy_xp INT, enemy_attack INT, enemy_def INT, enemy_dmg_spread INT)")
+        print("Created battles")
     except Exception as e:
         print(e)
     try:
         cursor.execute("CREATE TABLE eqpt (weapon_id INT, armor_id INT, ring_id INT, helmet_id INT, boots_id INT)")
+        print("Created battles")
     except Exception as e:
         print(e)
 
@@ -30,14 +34,15 @@ def drop(table):
 '''
 PLAYER METHODS
 '''
-# id, xp, hp, atk, def, pet_id, crit_chance, crit_dmg
+# id, xp, lvl, hp, atk, def, pet_id, crit_chance, crit_dmg
 # Note: Player level is calculated based on total xp
 @staticmethod
 def new_user(id):
     '''
     Adds a new user into the system
     '''
-    cursor.execute(f"INSERT INTO users VALUES ({id}, 0, 100, 5, 0, NULL, 1, 2, 6)")
+    cursor.execute(f"INSERT INTO users VALUES ({id}, 0, 1, 100, 5, 0, NULL, 1, 2, 6)")
+    connection.commit()
 
 def has_user(id) -> bool:
     return len(cursor.execute(f"SELECT * FROM users WHERE player_id = {id}").fetchall()) > 0
@@ -61,6 +66,7 @@ def update_hp(id, delta) -> int:
     player_hp = cursor.execute(f"SELECT hp FROM users WHERE player_id = {id}")
     player_hp += delta
     cursor.execute(f"UPDATE users SET hp = {player_hp}")
+    connection.commit()
     
 @staticmethod
 def update_xp(id) -> int:
@@ -97,6 +103,7 @@ def dmg_enemy(id, dmg_dealt) -> int:
     enemy_hp = cursor.execute(f"SELECT enemy_hp FROM battles WHERE player_id = {id}")
     enemy_hp -= dmg_dealt
     cursor.execute(f"UPDATE battles SET enemy_hp = {enemy_hp}")
+    connection.commit()
     return enemy_hp
 
 
@@ -118,4 +125,4 @@ drop("eqpt")
 '''
 
 
-create_tables()
+#create_tables()
