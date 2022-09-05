@@ -6,23 +6,57 @@ cursor = connection.cursor()
 @staticmethod
 def create_tables():
     try:
-        cursor.execute("CREATE TABLE users (player_id TEXT, xp INTEGER, lvl INTEGER, hp INTEGER, atk INTEGER, def INTEGER, pet_id TEXT, crit_chance INTEGER, crit_dmg INTEGER, dmg_spread INT)")
+        cursor.execute("""
+            CREATE TABLE users 
+                (player_id TEXT, xp INTEGER, lvl INTEGER, hp INTEGER, atk INTEGER, 
+                def INTEGER, pet_id TEXT, crit_chance INTEGER, crit_dmg INTEGER, 
+                dmg_spread INT)
+            """)
         print("Created Users")
     except Exception as e:
         print(e)
     try:
-        cursor.execute("CREATE TABLE pets (pet_id TEXT, level INTEGER, xp INTEGER, hp INTEGER, atk INTEGER, def INTEGER)")
+        cursor.execute("""
+            CREATE TABLE pets 
+                (pet_id TEXT, level INTEGER, xp INTEGER, hp INTEGER, atk INTEGER,
+                def INTEGER)
+                """)
         print("Created pets")
     except Exception as e:
         print(e)
     try:
-        cursor.execute("CREATE TABLE battles (player_id INT, enemy_name TEXT, enemy_hp INT, enemy_xp INT, enemy_attack INT, enemy_def INT, enemy_dmg_spread INT)")
+        cursor.execute("""
+        CREATE TABLE battles
+            (player_id TEXT, enemy_name TEXT, enemy_hp INT, enemy_xp INT,
+            enemy_attack INT, enemy_def INT, enemy_dmg_spread INT,
+            enemy_gold INT)
+            """)
         print("Created battles")
     except Exception as e:
         print(e)
     try:
-        cursor.execute("CREATE TABLE eqpt (weapon_id INT, armor_id INT, ring_id INT, helmet_id INT, boots_id INT)")
-        print("Created battles")
+        cursor.execute("""
+        CREATE TABLE eqpt 
+            (player_id TEXT, weapon_id INT, armor_id INT, ring_id INT,
+            helmet_id INT, boots_id INT)
+        """)
+        print("Created eqpt")
+    except Exception as e:
+        print(e)
+    try:
+        cursor.execute("""
+        CREATE TABLE items
+            (item_id TEXT, item_desc TEXT, buyable INT, craftable INT, cost INT)
+        """)
+        print("Created inv")
+    except Exception as e:
+        print(e)
+    try:
+        cursor.execute("""
+        CREATE TABLE inv
+            (player_id TEXT, gold INT, potions INT)
+        """)
+        print("Created inv")
     except Exception as e:
         print(e)
 
