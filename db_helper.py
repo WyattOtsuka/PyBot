@@ -62,6 +62,24 @@ def create_tables():
 
 
 @staticmethod
+def create_items(name, desc, buyable, craftable, cost):
+    '''
+    Adds a new item into the table
+    '''
+    if buyable:
+        buyable = 1
+    else: 
+        buyable = 0
+    
+    if craftable:
+        craftable = 1
+    else:
+        craftable = 0
+
+    cursor.execute(f"INSERT INTO items VALUES ({name}, {desc}, {buyable}, {craftable}, {cost})")
+    connection.commit()
+
+@staticmethod
 def drop(table):
     cursor.execute(f"DROP TABLE {table}")
 
