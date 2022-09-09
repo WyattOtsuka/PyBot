@@ -1,3 +1,4 @@
+from distutils.sysconfig import customize_compiler
 import sqlite3
 from game_data import pet, game_user
 connection = sqlite3.connect("./secrets/PyBot.db")
@@ -82,18 +83,20 @@ def create_items(name, desc, buyable, craftable, cost):
 @staticmethod
 def drop(table):
     cursor.execute(f"DROP TABLE {table}")
+    connection.commit()
 
 '''
 PLAYER METHODS
 '''
-# id, xp, lvl, hp, atk, def, pet_id, crit_chance, crit_dmg
+# id, xp, lvl, hp, atk, def, pet_id, crit_chance, crit_dmg, dmg spread
 # Note: Player level is calculated based on total xp
 @staticmethod
 def new_user(id):
     '''
     Adds a new user into the system
     '''
-    cursor.execute(f"INSERT INTO users VALUES ({id}, 0, 1, 100, 5, 0, NULL, 1, 2, 6)")
+    cursor.execute(f"INSERT INTO users VALUES ({id}, 0, 1, 100, 5, 0, NULL, 1, 2, 1)")
+    cursor.execute(f"INSERT INTO inv VALUES ({id}, 100, 5)")
     connection.commit()
 
 def has_user(id) -> bool:
@@ -115,10 +118,12 @@ def update_hp(id, delta) -> int:
     new HP = old HP + delta
     Returns the new HP
     '''
-    player_hp = cursor.execute(f"SELECT hp FROM users WHERE player_id = {id}")
+    player_hp = cursor.execute(f"SELECT hp FROM users WHERE player_id = {id}").fetchall()[0][0]
+    print(player_hp)
     player_hp += delta
     cursor.execute(f"UPDATE users SET hp = {player_hp}")
     connection.commit()
+    return player_hp
     
 @staticmethod
 def update_xp(id) -> int:
@@ -138,13 +143,13 @@ def in_fight(id):
     return len(cursor.execute(f"SELECT * FROM battles WHERE player_id = {id}").fetchall()) > 0
 
 # TODO - change from dummy fight
+# id, e name, e hp, e xp, e atk, e def, e dmg spread, e gold
 @staticmethod
 def new_fight(id):
     '''
     Create a new fight
     '''
-    
-    pass
+    cursor.execute(f"INSERT INTO battles VALUES ({id}, \"Dummy Enemy\", 100, 5, 3, 3, 0, 15)")
 
 @staticmethod
 def dmg_enemy(id, dmg_dealt) -> int:
@@ -152,12 +157,19 @@ def dmg_enemy(id, dmg_dealt) -> int:
     Deal damage to the current enemy the user is fighting. 
     Returns the enemies current HP after damage is dealt
     '''
-    enemy_hp = cursor.execute(f"SELECT enemy_hp FROM battles WHERE player_id = {id}")
+    enemy_hp = cursor.execute(f"SELECT enemy_hp FROM battles WHERE player_id = {id}").fetchall()[0][0]
     enemy_hp -= dmg_dealt
     cursor.execute(f"UPDATE battles SET enemy_hp = {enemy_hp}")
     connection.commit()
     return enemy_hp
 
+@staticmethod
+def get_fight(id) -> list:
+    '''
+    Returns fight data for player with given id
+    '''
+    fight = cursor.execute(f"SELECT * FROM battles WHERE player_id = {id}").fetchall()[0]
+    return fight
 
 '''
 TODO
