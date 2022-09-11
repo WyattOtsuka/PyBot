@@ -82,9 +82,27 @@ async def adventure(id, channel):
 
     if player_hp <= 0: # Loss
         await channel.send("You died")
+        db.end_fight(id)
     else:
         if enemy_hp <=0: # Win
-            await channel.send("You won!")
+
+            user.xp += enemy.xp
+            db.end_fight(id)
+            level_up = False
+            while user.xp >= xp_to_level(user.lvl):
+                level_up = True
+                user.xp -= xp_to_level(user.lvl)
+                user.lvl += 1
+            msg = ""
+            if level_up:
+                msg = f"You won!\nXP: {enemy.xp}\nGold: {enemy.gold}\nYou leveled up to level {user.lvl}"
+            else:
+                msg = f"You won!\nXP: {enemy.xp}\nGold: {enemy.gold}"
+            await channel.send(msg)
+
+            db.update_level(id, user.lvl)
+            db.update_xp(id, user.xp)
+            db.end_fight(id)
         else: # Undecided       
             await channel.send(f"Your HP: {player_hp}\nEnemy HP: {enemy_hp}")
 
@@ -144,13 +162,12 @@ HELPER METHODS
 def xp_to_level(lvl) -> int:
     '''
     Returns xp required to get to next level 
-    
-    10 + lvl for base scaling up of the level xp. lvls 1 - 100
-    math.floor(lvl/10) to make each set of 10 scale harder than the rest
-    ** 1.5 for the range of 100 to about 500
-    (1/2000) * (1000 - math.floor(1000/lvl)) helps keep the xp form taking off too far. 500+
     '''
-    return (10 + lvl ) * math.floor(lvl/10) ** (1.5 - (1/2000) * (1000 - math.floor(1000/lvl)))
+    return math.floor((10 + 10 * lvl) * (1 + 5 * (math.floor(lvl/10) ** (0.75 - (1/2000) * (1000 - math.floor(1000/lvl))))))
+
+'''
+RESPONSE METHODS
+'''
 
 @staticmethod
 async def help(channel):

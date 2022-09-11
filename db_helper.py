@@ -121,15 +121,25 @@ def update_hp(id, delta) -> int:
     player_hp = cursor.execute(f"SELECT hp FROM users WHERE player_id = {id}").fetchall()[0][0]
     print(player_hp)
     player_hp += delta
-    cursor.execute(f"UPDATE users SET hp = {player_hp}")
+    cursor.execute(f"UPDATE users SET hp = {player_hp} WHERE player_id = {id}")
     connection.commit()
     return player_hp
     
 @staticmethod
-def update_xp(id) -> int:
+def update_xp(id, xp) -> int:
     '''
     Changes xp to a new amount
     '''
+    cursor.execute(f"UPDATE users SET xp = {xp} WHERE player_id = {id}")
+    connection.commit()
+
+def update_level(id, level) -> int:
+    '''
+    Change the level of the player
+    '''
+    cursor.execute(f"UPDATE users SET lvl = {level} WHERE player_id = {id}")
+    connection.commit()
+
 
 '''
 COMBAT METHODS
@@ -149,7 +159,7 @@ def new_fight(id):
     '''
     Create a new fight
     '''
-    cursor.execute(f"INSERT INTO battles VALUES ({id}, \"Dummy Enemy\", 100, 5, 3, 3, 0, 15)")
+    cursor.execute(f"INSERT INTO battles VALUES ({id}, \"Dummy Enemy\", 100, 5000, 3, 3, 0, 15)")
 
 @staticmethod
 def dmg_enemy(id, dmg_dealt) -> int:
@@ -164,12 +174,20 @@ def dmg_enemy(id, dmg_dealt) -> int:
     return enemy_hp
 
 @staticmethod
-def get_fight(id) -> list:
+def get_enemy(id) -> enemy:
     '''
     Returns fight data for player with given id
     '''
     fight = cursor.execute(f"SELECT * FROM battles WHERE player_id = {id}").fetchall()[0]
-    return fight
+    em = enemy(fight)
+    return em
+
+def end_fight(id):
+    '''
+    Removes the fight for player with id from the table
+    '''
+    cursor.execute(f"DELETE FROM battles WHERE player_id = {id}")
+    connection.commit()
 
 '''
 TODO
