@@ -7,6 +7,8 @@ import sqlite3
 import db_helper as db
 from random import randrange
 
+from game_data import enemy
+
 # Setting up Login
 f = open("./secrets/config.json")
 configs = json.load(f)
@@ -16,10 +18,6 @@ intents.message_content = True
 
 client = discord.Client(intents=intents)
 prefix = configs['prefix']
-
-# Setting up the database
-connection = sqlite3.connect("./secrets/PyBot.db")
-cursor = connection.cursor()
 
 @client.event
 async def on_ready():
@@ -70,13 +68,13 @@ async def adventure(id, channel):
     if not db.in_fight(id):
         # Get current level +/- 3 to fight level [0:inf)
         roll_new_fight(id)
-    fight = db.get_fight(id)
+    enemy = db.get_enemy(id)
 
     player_roll = randrange(1,6,1)
     enemy_roll = randrange(1,6,1)
 
     # Add base dmg to roll * spread
-    dmg_to_player = enemy_roll * fight[6] + fight[4]
+    dmg_to_player = enemy_roll * enemy.dmg_spread + enemy.atk
     dmg_to_enemy = player_roll * user.dmg_spread + user.atk + 30
 
     player_hp = db.update_hp(id, -dmg_to_player)
@@ -136,7 +134,6 @@ def xp_share(percent):
 @staticmethod
 def set_name(name):
     pass
-
 
 
 '''

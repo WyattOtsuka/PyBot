@@ -13,6 +13,17 @@ class game_user:
         self.dmg_spread = args[9]
 
 
+class enemy:
+    def __init__(self, args):
+        self.player_id = args[0]
+        self.name = args[1]
+        self.hp = args[2]
+        self.xp = args[3]
+        self.atk = args[4]
+        self.defence = args[5]
+        self.dmg_spread = args[6]
+        self.gold = args[7]
+
 class pet:
     def __init__(self, args):
         '''

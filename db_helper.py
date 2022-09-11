@@ -1,6 +1,6 @@
 from distutils.sysconfig import customize_compiler
 import sqlite3
-from game_data import pet, game_user
+from game_data import pet, game_user, enemy
 connection = sqlite3.connect("./secrets/PyBot.db")
 cursor = connection.cursor()
 
