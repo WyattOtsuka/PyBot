@@ -25,6 +25,7 @@ async def on_ready():
     db.drop("users")
     db.drop("battles")
     db.create_tables()
+    db.commit()
     print("\n")
 
 @client.event
@@ -38,6 +39,7 @@ async def on_message(message):
         if content == f'{prefix}adv' or content == f'{prefix}adventure':
             if not db.has_user(id):
                 db.new_user(id)
+                db.commit()
                 await new_player(message)
             else:
                 await adventure(id, message.channel)
@@ -83,11 +85,11 @@ async def adventure(id, channel):
     if player_hp <= 0: # Loss
         await channel.send("You died")
         db.end_fight(id)
+        db.commit()
     else:
         if enemy_hp <=0: # Win
 
             user.xp += enemy.xp
-            db.end_fight(id)
             level_up = False
             while user.xp >= xp_to_level(user.lvl):
                 level_up = True
@@ -103,13 +105,10 @@ async def adventure(id, channel):
             db.update_level(id, user.lvl)
             db.update_xp(id, user.xp)
             db.end_fight(id)
+            db.commit()
         else: # Undecided       
             await channel.send(f"Your HP: {player_hp}\nEnemy HP: {enemy_hp}")
 
-
-
-
-        
         
 
 @staticmethod

@@ -16,6 +16,7 @@ def create_tables():
         print("Created Users")
     except Exception as e:
         print(e)
+
     try:
         cursor.execute("""
             CREATE TABLE pets 
@@ -25,6 +26,7 @@ def create_tables():
         print("Created pets")
     except Exception as e:
         print(e)
+
     try:
         cursor.execute("""
         CREATE TABLE battles
@@ -35,6 +37,7 @@ def create_tables():
         print("Created battles")
     except Exception as e:
         print(e)
+
     try:
         cursor.execute("""
         CREATE TABLE eqpt 
@@ -44,6 +47,7 @@ def create_tables():
         print("Created eqpt")
     except Exception as e:
         print(e)
+
     try:
         cursor.execute("""
         CREATE TABLE items
@@ -52,6 +56,7 @@ def create_tables():
         print("Created inv")
     except Exception as e:
         print(e)
+
     try:
         cursor.execute("""
         CREATE TABLE inv
@@ -83,6 +88,9 @@ def create_items(name, desc, buyable, craftable, cost):
 @staticmethod
 def drop(table):
     cursor.execute(f"DROP TABLE {table}")
+
+@staticmethod
+def commit():
     connection.commit()
 
 '''
@@ -97,7 +105,6 @@ def new_user(id):
     '''
     cursor.execute(f"INSERT INTO users VALUES ({id}, 0, 1, 100, 5, 0, NULL, 1, 2, 1)")
     cursor.execute(f"INSERT INTO inv VALUES ({id}, 100, 5)")
-    connection.commit()
 
 def has_user(id) -> bool:
     return len(cursor.execute(f"SELECT * FROM users WHERE player_id = {id}").fetchall()) > 0
@@ -122,7 +129,6 @@ def update_hp(id, delta) -> int:
     print(player_hp)
     player_hp += delta
     cursor.execute(f"UPDATE users SET hp = {player_hp} WHERE player_id = {id}")
-    connection.commit()
     return player_hp
     
 @staticmethod
@@ -170,7 +176,6 @@ def dmg_enemy(id, dmg_dealt) -> int:
     enemy_hp = cursor.execute(f"SELECT enemy_hp FROM battles WHERE player_id = {id}").fetchall()[0][0]
     enemy_hp -= dmg_dealt
     cursor.execute(f"UPDATE battles SET enemy_hp = {enemy_hp}")
-    connection.commit()
     return enemy_hp
 
 @staticmethod
@@ -187,7 +192,6 @@ def end_fight(id):
     Removes the fight for player with id from the table
     '''
     cursor.execute(f"DELETE FROM battles WHERE player_id = {id}")
-    connection.commit()
 
 '''
 TODO
