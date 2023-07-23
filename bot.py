@@ -24,6 +24,7 @@ async def on_ready():
     print(f'We have logged in as {client.user}')
     db.drop("users")
     db.drop("battles")
+    db.drop("inv")
     db.create_tables()
     db.commit()
     print("\n")
@@ -47,6 +48,9 @@ async def on_message(message):
             await help(message.channel)
         elif content == f'{prefix}rules':
             await rules(message.channel)
+        elif content.startswith(f'{prefix}give_item'):
+            input = content.split()
+            dbg_give_item(input[1], input[2], input[3])
 
 
 '''
@@ -57,7 +61,7 @@ async def new_player(message):
     username = message.author.name
     await message.channel.send(f'''
     Welcome {username} to PyBot!
-    \rUse {prefix}rules for the rules, and {prefix}help for commands
+    \rUse **{prefix}rules** for the rules, and **{prefix}help** for commands
     ''')
 
 @staticmethod
@@ -85,7 +89,6 @@ async def adventure(id, channel):
     if player_hp <= 0: # Loss
         await channel.send("You died")
         db.end_fight(id)
-        db.commit()
     else:
         if enemy_hp <=0: # Win
 
@@ -105,12 +108,33 @@ async def adventure(id, channel):
             db.update_level(id, user.lvl)
             db.update_xp(id, user.xp)
             db.end_fight(id)
-            db.commit()
         else: # Undecided       
             await channel.send(f"Your HP: {player_hp}\nEnemy HP: {enemy_hp}")
+    db.commit()
 
-        
+'''
+DBG METHODS
+'''
+@staticmethod
+def dbg_give_item(player_id, item_id, count):
+    '''
+    Give the player an item
+    '''
+    db.add_item(player_id, item_id, count)
+    db.commit()
 
+'''
+INVENTORY METHODS
+'''
+@staticmethod
+def print_inv():
+    '''
+    Gathers the player's inventory from the database and formats the information for printing
+    '''
+
+'''
+COMBAT METHODS
+'''
 @staticmethod
 def heal(item, count):
     '''
@@ -139,6 +163,7 @@ def roll_new_fight(id):
     Create a new monster with stats based on the players level
     '''
     # Currently Rolling Dummy fight
+    # TODO - Make fight scale appropriately with level
     db.new_fight(id)
     pass
 '''
@@ -184,6 +209,11 @@ async def rules(channel):
     - No bigotry, racism, hate speech, etc. will be tolerated. You will be permenantly banned.
     - The bot does NOT have any rule against automation. The game is designed to be played by a script, and scales likewise.
     ''')
-    pass
+
+@staticmethod
+async def inv(channel, inv):
+    await channel.send(f'''
+    {inv}
+    ''')
 
 client.run(configs['token'])

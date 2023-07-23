@@ -1,5 +1,6 @@
 from distutils.sysconfig import customize_compiler
 import sqlite3
+from turtle import update
 from game_data import pet, game_user, enemy
 connection = sqlite3.connect("./secrets/PyBot.db")
 cursor = connection.cursor()
@@ -22,17 +23,17 @@ def create_tables():
             CREATE TABLE pets 
                 (pet_id TEXT, level INTEGER, xp INTEGER, hp INTEGER, atk INTEGER,
                 def INTEGER)
-                """)
+            """)
         print("Created pets")
     except Exception as e:
         print(e)
 
     try:
         cursor.execute("""
-        CREATE TABLE battles
-            (player_id TEXT, enemy_name TEXT, enemy_hp INT, enemy_xp INT,
-            enemy_attack INT, enemy_def INT, enemy_dmg_spread INT,
-            enemy_gold INT)
+            CREATE TABLE battles
+                (player_id TEXT, enemy_name TEXT, enemy_hp INT, enemy_xp INT,
+                enemy_attack INT, enemy_def INT, enemy_dmg_spread INT,
+                enemy_gold INT)
             """)
         print("Created battles")
     except Exception as e:
@@ -40,18 +41,27 @@ def create_tables():
 
     try:
         cursor.execute("""
-        CREATE TABLE eqpt 
-            (player_id TEXT, weapon_id INT, armor_id INT, ring_id INT,
-            helmet_id INT, boots_id INT)
-        """)
+            CREATE TABLE eqpt 
+                (player_id TEXT, weapon_id INT, armor_id INT, ring_id INT,
+                helmet_id INT, boots_id INT)
+            """)
         print("Created eqpt")
     except Exception as e:
         print(e)
 
     try:
         cursor.execute("""
-        CREATE TABLE items
-            (item_id TEXT, item_desc TEXT, buyable INT, craftable INT, cost INT)
+        CREATE TABLE items_inv
+            (player_id TEXT, item_id INT, quantity INT)
+        """)
+        print("Created items_inv")
+    except Exception as e:
+        print(e)
+
+    try:
+        cursor.execute("""
+        CREATE TABLE master_items
+            (item_id INT, item_desc TEXT, buyable INT, craftable INT, cost INT)
         """)
         print("Created inv")
     except Exception as e:
@@ -137,15 +147,21 @@ def update_xp(id, xp) -> int:
     Changes xp to a new amount
     '''
     cursor.execute(f"UPDATE users SET xp = {xp} WHERE player_id = {id}")
-    connection.commit()
-
+    
+@staticmethod
 def update_level(id, level) -> int:
     '''
     Change the level of the player
     '''
     cursor.execute(f"UPDATE users SET lvl = {level} WHERE player_id = {id}")
-    connection.commit()
 
+@staticmethod
+def level_up(id, quantity = 1):
+    '''
+    Increases level by quanitity
+    '''
+    lvl = cursor.execute(f"SELECT lvl FROM users WHERE player_id = {id}").fetchall()[0][0]
+    update_level(id, lvl + quantity)
 
 '''
 COMBAT METHODS
@@ -187,11 +203,26 @@ def get_enemy(id) -> enemy:
     em = enemy(fight)
     return em
 
+@staticmethod
 def end_fight(id):
     '''
     Removes the fight for player with id from the table
     '''
     cursor.execute(f"DELETE FROM battles WHERE player_id = {id}")
+
+'''
+INVENTORY METHODS
+'''
+@staticmethod
+def add_item(player_id, item_id, count):
+    item_count = cursor.execute(f"SELECT quantity FROM items_inv WHERE player_id = {player_id} AND item_id = {item_id}").fetchall()
+    if item_count == []: 
+        cursor.execute(f"INSERT INTO items_inv VALUES ({player_id}, {item_id}, {count})")
+    else:
+        print(item_count)
+        cursor.execute(f"UPDATE items_inv SET quantity = {item_count[0][0] + int(count)}")
+    pass
+
 
 '''
 TODO

@@ -24,6 +24,21 @@ class enemy:
         self.dmg_spread = args[6]
         self.gold = args[7]
 
+class item:
+    def __init__(self, args):
+        self.name = args[0]
+        self.item_id = args[1]
+        self.desc = args[2]
+        self.buyable = args[3]
+        self.craftable = args[4]
+        self.cost = args[5]
+    
+class inventory:
+    def __init__(self, args):
+        self.player_id = args[0]
+        self.item_ids = args[1]
+        self.quantity = args[2]
+
 class pet:
     def __init__(self, args):
         '''
