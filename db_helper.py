@@ -61,7 +61,7 @@ def create_tables():
     try:
         cursor.execute("""
         CREATE TABLE master_items
-            (item_id INT, item_desc TEXT, buyable INT, craftable INT, cost INT)
+            (item_id INT, item_name TEXT, item_desc TEXT, buyable INT, craftable INT, cost INT)
         """)
         print("Created inv")
     except Exception as e:
@@ -97,12 +97,18 @@ def create_items(name, desc, buyable, craftable, cost):
 
 @staticmethod
 def drop(table):
+    print(f"Dropping table {table}")
     cursor.execute(f"DROP TABLE {table}")
 
 @staticmethod
 def commit():
     connection.commit()
 
+def add_master_item(item_id, item_name, item_desc, buyable, craftable, cost):
+    cursor.execute(f"INSERT INTO master_items VALUES ({item_id}, '{item_name}', '{item_desc}', {buyable}, {craftable}, {cost})")
+
+def update_master_item(item_id, item_name, item_desc, buyable, craftable, cost):
+    cursor.execute(f"UPDATE master_items SET item_name = {item_name}, item_desc = {item_desc}, buyable = {buyable}, craftable = {craftable}, cost WHERE item_id = {item_id}")
 '''
 PLAYER METHODS
 '''
@@ -115,6 +121,11 @@ def new_user(id):
     '''
     cursor.execute(f"INSERT INTO users VALUES ({id}, 0, 1, 100, 5, 0, NULL, 1, 2, 1)")
     cursor.execute(f"INSERT INTO inv VALUES ({id}, 100, 5)")
+    cursor.execute(f"INSERT INTO eqpt VALUES ({id}, 1000050001, NULL, NULL, NULL, NULL)")
+    cursor.execute(f"INSERT INTO eqpt VALUES ({id + 1}, 1000050001, NULL, NULL, NULL, NULL)")
+    cursor.execute(f"INSERT INTO eqpt VALUES ({id + 2}, 1000050001, NULL, NULL, NULL, NULL)")
+
+
 
 def has_user(id) -> bool:
     return len(cursor.execute(f"SELECT * FROM users WHERE player_id = {id}").fetchall()) > 0
@@ -191,7 +202,7 @@ def dmg_enemy(id, dmg_dealt) -> int:
     '''
     enemy_hp = cursor.execute(f"SELECT enemy_hp FROM battles WHERE player_id = {id}").fetchall()[0][0]
     enemy_hp -= dmg_dealt
-    cursor.execute(f"UPDATE battles SET enemy_hp = {enemy_hp}")
+    cursor.execute(f"UPDATE battles SET enemy_hp = {enemy_hp} WHERE player_id = {id}")
     return enemy_hp
 
 @staticmethod
@@ -214,16 +225,64 @@ def end_fight(id):
 INVENTORY METHODS
 '''
 @staticmethod
-def add_item(player_id, item_id, count):
+def item_count(player_id, item_id):
+    '''
+    Returns the player's count for a specified item
+    '''
     item_count = cursor.execute(f"SELECT quantity FROM items_inv WHERE player_id = {player_id} AND item_id = {item_id}").fetchall()
-    if item_count == []: 
+    if item_count == []: # No items
+        return 0
+    else:
+        return item_count[0][0]
+
+@staticmethod
+def add_item(player_id, item_id, count):
+    curr_count = item_count(player_id, item_id)
+    if curr_count == 0: 
         cursor.execute(f"INSERT INTO items_inv VALUES ({player_id}, {item_id}, {count})")
     else:
-        print(item_count)
-        cursor.execute(f"UPDATE items_inv SET quantity = {item_count[0][0] + int(count)}")
+        cursor.execute(f"UPDATE items_inv SET quantity = {curr_count + int(count)} WHERE player_id = {player_id} AND item_id = {item_id}")
     pass
 
+@staticmethod
+def remove_item(player_id, item_id, count):
+    curr_count = item_count(player_id, item_id)
+    if curr_count == count: 
+        cursor.execute(f"DELETE FROM items_inv WHERE player_id = {player_id} and item_id = {item_id}")
+    else: 
+        cursor.execute(f"UPDATE items_inv SET quantity = {curr_count - int(count)} WHERE player_id = {player_id} AND item_id = {item_id}")
 
+@staticmethod
+def equip_item(player_id, item_id):
+    '''
+    item_id MUST be a valid item to equip
+    '''
+    item_class = int(str(item_id)[:2])
+    statement = ""
+    match item_class:
+        case 10:
+            statement = "weapon_id"
+        case 11:
+            statement = "armor_id"
+        case 12:
+            statement = "ring_id"
+        case 13:
+            statement = "helmet_id"
+        case 14: 
+            statement = "boots_id"
+    curr_equip_id = cursor.execute(f"SELECT {statement} FROM eqpt WHERE player_id = {player_id}").fetchall() #[0][0]
+    if curr_equip_id != []:
+        add_item(player_id, curr_equip_id[0][0], 1)
+        remove_item(player_id, item_id, 1)
+    cursor.execute(f"UPDATE eqpt SET {statement} = {item_id} WHERE player_id = {player_id}")
+
+@staticmethod
+def show_eqpt(player_id):
+    pass
+
+@staticmethod
+def id_to_name(item_id):
+    return cursor.execute(f"SELECT item_name FROM master_items WHERE item_id = {item_id}").fetchall()[0][0]
 '''
 TODO
 Pet
@@ -239,7 +298,8 @@ drop("users")
 drop("pets")
 drop("battles")
 drop("eqpt")
+drop("items")
+drop("items_inv")
+drop("inv")
 '''
-
-
 #create_tables()

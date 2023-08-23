@@ -22,9 +22,6 @@ prefix = configs['prefix']
 @client.event
 async def on_ready():
     print(f'We have logged in as {client.user}')
-    db.drop("users")
-    db.drop("battles")
-    db.drop("inv")
     db.create_tables()
     db.commit()
     print("\n")
@@ -48,9 +45,17 @@ async def on_message(message):
             await help(message.channel)
         elif content == f'{prefix}rules':
             await rules(message.channel)
+        elif content.startswith(f'{prefix}equip'):
+            input = content.split()
+            equip_item(id, input[1])
         elif content.startswith(f'{prefix}give_item'):
             input = content.split()
             dbg_give_item(input[1], input[2], input[3])
+        elif content.startswith(f'{prefix}addmasteritem'):
+            input = content.split('_')
+            dbg_add_master_item(input[1], input[2], input[3], input[4], input[5], input[6])
+        elif content.startswith(f'{prefix}test'):
+            dbg_test(id)
 
 
 '''
@@ -123,6 +128,16 @@ def dbg_give_item(player_id, item_id, count):
     db.add_item(player_id, item_id, count)
     db.commit()
 
+@staticmethod
+def dbg_test(player_id):
+    print(db.item_count(player_id, 1234567890))
+    db.commit()
+
+@staticmethod
+def dbg_add_master_item(item_id, item_name, item_desc, buyable, craftable, cost):
+    db.add_master_item(item_id, item_name, item_desc, buyable, craftable, cost)
+    db.commit()
+
 '''
 INVENTORY METHODS
 '''
@@ -131,7 +146,30 @@ def print_inv():
     '''
     Gathers the player's inventory from the database and formats the information for printing
     '''
+    pass
 
+@staticmethod
+def show_eqpt(player_id):
+    '''
+    Print the equipt items for the player
+    '''
+    pass
+
+@staticmethod
+def equip_item(player_id, item_id):
+    '''
+    Attempts to equip and item to the player if valid
+    '''
+    # Make sure the item id is a valid id to use
+    item_class = int(str(item_id)[:2])
+    if item_class > 14 or item_class < 10:
+        print(item_class)
+    # Make sure there is an equipable item in inv
+    if db.item_count(player_id, item_id) > 0:
+        print("equipping")
+        db.equip_item(player_id, 1000150001)
+        db.commit()
+    
 '''
 COMBAT METHODS
 '''

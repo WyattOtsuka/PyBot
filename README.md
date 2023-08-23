@@ -13,13 +13,13 @@ Item Ids are unique identifiers per item. They encode information about the item
 16-99 Undecided
 
 345 is the item 
-1 - Wooden Sword
-2 - Rusty Knife
-3 - Dull Short Sword
+000 - Wooden Sword
+001 - Rusty Knife
+002 - Dull Short Sword
 ...
-1 - Ring of String
-2 - Rusted Ring
-2 - Iron Ring
+000 - Ring of String
+001 - Rusted Ring
+002 - Iron Ring
 ...
 
 6 is the item quality. The item quality is a % modifier on the item's stats.
