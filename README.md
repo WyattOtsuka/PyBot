@@ -1,6 +1,6 @@
 To start, run `python bot.py`
 
-#Item Ids
+# Item Ids
 Item Ids are unique identifiers per item. They encode information about the item. Example: 1234567890
 
 12 is the item class
